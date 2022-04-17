@@ -1,0 +1,33 @@
+apiVersion: apps/v1                           # version of kube api
+kind: Deployment                              # workload resource type
+metadata:
+  name: ok-web-deployment                     # resource identifier
+spec:
+  replicas: 2                                 # always run 2 copies
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 50%                     # when updating, ensure half of all replicas stay live
+    type: RollingUpdate
+  template:
+    spec:
+      containers:
+      - env:                                  # some k-v pairs to inject
+        - name: OK_ENV
+          value: prod
+        image: cs61a/ok-server                # docker image for this container
+        imagePullPolicy: Always               # always pull image on update
+        livenessProbe:                        # how to check if container is OK
+          failureThreshold: 3                 # if 3 consecutive errors, report
+          httpGet:
+            path: /healthz                    # path to get to check liveness
+            port: 5000
+            scheme: HTTP
+          initialDelaySeconds: 5              # wait 5sec after deploy to start
+          periodSeconds: 10                   # run probe every 10 seconds
+          successThreshold: 1                 # if 1 consecutive success, all OK
+          timeoutSeconds: 1                   # expect response within 1 second
+        name: ok-v3-deploy                    # container identifier within pod
+        ports:                                # container ports to expose
+        - containerPort: 5000
+          protocol: TCP

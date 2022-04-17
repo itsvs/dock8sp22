@@ -1,0 +1,33 @@
+apiVersion: apps/v1                           # version of kube api
+kind: Deployment                              # workload resource type
+metadata:
+  name: ok-worker-deployment                  # resource identifier
+spec:
+  replicas: 3                                 # always run 3 copies
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1                       # when updating, ensure 1 replica stays live
+    type: RollingUpdate
+  template:
+    spec:
+      containers:
+      - command:
+        - ./worker.py                         # what this container should run
+        env:                                  # some k-v pairs to inject
+        - name: OK_ENV
+          value: prod
+        image: cs61a/ok-server                # docker image for this container
+        imagePullPolicy: Always               # always pull image on update
+        name: ok-v3-worker                    # container identifier within pod
+        volumeMounts:                         # inject the database certificate
+        - mountPath: /db_ssl
+          name: db-ssl
+          readOnly: true
+      restartPolicy: Always                   # on failure, restart container
+      terminationGracePeriodSeconds: 30       # sigkill after 30sec of sigterm
+      volumes:
+      - name: db-ssl                          # find the database certificate
+        secret:                               # stored in kube secrets (another
+          defaultMode: 420                    # helpful kube feature!)
+          secretName: ok-db
