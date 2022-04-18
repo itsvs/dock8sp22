@@ -154,6 +154,19 @@ init_codeblock: false
 
 ---
 
+# Introduction to Docker: 61A Development
+
+On 61A staff, in an effort to avoid platform-specific build issues, we use
+containers to develop on the website and on software. This doesn't solve _all_
+issues, but it helps solve random one-off versioning issues. Our Dockerfile:
+
+```file
+path: docker_demo/61a.Dockerfile
+lang: Dockerfile
+```
+
+---
+
 # Bridge: Microservices
 
 ## The Idea
